@@ -2,12 +2,12 @@ import React, { useState } from 'react'
 import { Pane } from './components/Pane'
 import { Global, css } from '@emotion/core'
 import { Group } from './components/Group'
-import { ProgressBar } from './components/ProgressBar'
 import { requestStore } from './stores/RequestStore'
 import { useObservable } from 'micro-observables'
 import styled from '@emotion/styled'
 import { groupConfigs } from './groupConfigs'
 import { Button } from './components/Button'
+import { CACHE_NAME } from './constants'
 
 const App = () => {
   const progress = useObservable(requestStore.progress)
@@ -36,6 +36,13 @@ const App = () => {
     })
     localStorage.setItem('online', JSON.stringify(value))
     setOnline(value)
+  }
+
+  const handlePurgeCache = async () => {
+    await caches.delete(CACHE_NAME)
+
+    requestStore.reset()
+    groupConfigs.forEach(groupConfig => groupConfig.store.reset())
   }
 
   return (
@@ -67,6 +74,9 @@ const App = () => {
             <OnlineIndicator online={isOnline} />
             <span>{isOnline ? 'Online' : 'Offline'}</span>
           </OnlineButton>
+          <PurgeButton onClick={handlePurgeCache}>
+            <span>Purge</span>
+          </PurgeButton>
         </ButtonContainer>
 
         <StatContainer>
@@ -107,10 +117,23 @@ const Heading = styled.h1`
 
 const ButtonContainer = styled.div`
   padding: 16px 0;
+  display: flex;
+  align-items: center;
+`
+
+const PurgeButton = styled(Button)`
+  span {
+    margin-top: 2px;
+  }
 `
 
 const OnlineButton = styled(Button)`
   width: 90px;
+  margin-right: 10px;
+
+  span {
+    margin-top: 2px;
+  }
 `
 
 const OnlineIndicator = styled.div<{ online: boolean }>`
@@ -132,6 +155,10 @@ const StatContainer = styled.div`
   justify-content: space-between;
   padding: 12px 16px;
   margin-bottom: 16px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #121315 0%, #1a1c1f 100%);
+  box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.15),
+    inset 0px -1px 1px rgba(240, 244, 249, 0.15);
 `
 
 const Stat = styled.div`

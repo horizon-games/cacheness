@@ -69,10 +69,8 @@ self.addEventListener('fetch', event => {
 
 const shouldCache = request => {
   //return true
-  return (
-    request.url.startsWith('https://assets.skyweaver.net/') ||
-    request.destination === 'image'
-  )
+  return request.url.startsWith('https://assets.skyweaver.net/')
+  //|| request.destination === 'image'
 }
 
 const messageClients = data => {

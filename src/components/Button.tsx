@@ -63,8 +63,4 @@ const InnerContainer = styled.a`
   &.primary {
     background: linear-gradient(318.62deg, #ec6401 17.83%, #d62903 86.21%);
   }
-
-  > span {
-    margin-top: 2px;
-  }
 `

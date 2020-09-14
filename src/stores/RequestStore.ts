@@ -1,3 +1,4 @@
+import { request } from 'http'
 import { observable } from 'micro-observables'
 import { GroupId } from '../groupConfigs'
 
@@ -44,6 +45,12 @@ export class RequestStore {
       requests.map(request =>
         request.url === url ? { ...request, status } : request
       )
+    )
+  }
+
+  reset() {
+    this._requests.update(requests =>
+      requests.map(request => ({ ...request, status: RequestStatus.Pending }))
     )
   }
 
