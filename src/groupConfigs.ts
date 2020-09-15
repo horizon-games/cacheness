@@ -8,6 +8,7 @@ import {
   requestStore
 } from './stores/RequestStore'
 import { CACHE_NAME } from './constants'
+import { uiStore } from './stores/UIStore'
 
 const manifestData = new AssetHashManifest(
   'https://assets.skyweaver.net',
@@ -107,12 +108,73 @@ export const groupConfigs: GroupConfig[] = [
     ext: ['ktx'],
     store: new RequestStore(),
     getAssetPaths: () => {
+      // Desktop chrome
+      // "WEBGL_compressed_texture_s3tc"
+      // "WEBKIT_WEBGL_compressed_texture_s3tc"
+      // "WEBGL_compressed_texture_s3tc_srgb"
+
+      // Desktop safari
+      // "WEBGL_compressed_texture_s3tc"
+
+      // Mobile safari
+      // "WEBKIT_WEBGL_compressed_texture_pvrtc"
+
       // Detect supported gl texture
       const exts = [
-        'astc.COMPRESSED_ASTC_8x8_KHR.ktx',
-        'pvrtc.COMPRESSED_PVRTC1_2.ktx',
-        's3tc.COMPRESSED_S3TC_DXT_EXT.ktx'
+        'astc.COMPRESSED_ASTC_8x8_KHR.ktx', // Android
+        'pvrtc.COMPRESSED_PVRTC1_2.ktx', // iOS
+        's3tc.COMPRESSED_S3TC_DXT_EXT.ktx' // Desktop devices
       ]
+
+      const formatExts = {
+        astc: 'astc.COMPRESSED_ASTC_8x8_KHR.ktx',
+        pvrtc: 'pvrtc.COMPRESSED_PVRTC1_2.ktx',
+        s3tc: 's3tc.COMPRESSED_S3TC_DXT_EXT.ktx'
+      }
+
+      const canvas = document.createElement('canvas')
+      const gl = canvas.getContext('webgl')
+
+      let supportedFormat: keyof typeof formatExts | undefined
+
+      if (gl) {
+        const extensions = gl.getSupportedExtensions()
+
+        if (extensions) {
+          const textureExtensions = extensions.filter(ext =>
+            ext.includes('WEBGL_compressed_texture')
+          )
+
+          if (textureExtensions.length) {
+            supportedFormat = (Object.keys(formatExts) as Array<
+              keyof typeof formatExts
+            >).find(format => textureExtensions[0].includes(format))
+          }
+        }
+      }
+
+      if (
+        supportedFormat &&
+        Object.keys(formatExts).includes(supportedFormat)
+      ) {
+        uiStore.setGLTextureFormat(supportedFormat)
+
+        const formatExt = formatExts[supportedFormat]
+
+        return cardLib.cards.reduce<string[]>((acc, card) => {
+          if (acc.length < 16) {
+            acc.push(
+              manifestData.getFullUrl(
+                `game/cards/art-full/${
+                  card.type === 'unit' ? 'units' : 'spells'
+                }/${card.asset}.png.${formatExt}`
+              )
+            )
+          }
+          return acc
+        }, [])
+      }
+
       return []
     }
   }

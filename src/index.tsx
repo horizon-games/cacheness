@@ -50,6 +50,7 @@ const serviceWorkerReady = async () => {
 
   //loadGroupAssets('audio')
   //loadGroupAssets('image')
+  //loadGroupAssets('texture')
 }
 
 serviceWorkerReady()

@@ -8,6 +8,7 @@ import { getGroupConfig, GroupId, groupConfigs } from '../groupConfigs'
 
 import { AudioPlayer } from './AudioPlayer'
 import { ImagePlayer } from './ImagePlayer'
+import { GLTexturePlayer } from './GLTexturePlayer'
 
 interface GroupProps {
   id: GroupId
@@ -61,6 +62,9 @@ const getGroupPlayer = (groupId: GroupId) => {
 
       case 'image':
         return <ImagePlayer />
+
+      case 'texture':
+        return <GLTexturePlayer />
 
       default:
         return null
