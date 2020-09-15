@@ -39,10 +39,12 @@ const App = () => {
   }
 
   const handlePurgeCache = async () => {
-    await caches.delete(CACHE_NAME)
+    if (window.confirm('Are you sure?')) {
+      await caches.delete(CACHE_NAME)
 
-    requestStore.reset()
-    groupConfigs.forEach(groupConfig => groupConfig.store.reset())
+      requestStore.reset()
+      groupConfigs.forEach(groupConfig => groupConfig.store.reset())
+    }
   }
 
   return (
