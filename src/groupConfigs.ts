@@ -234,11 +234,15 @@ export const initGroups = () => {
   groupConfigs.forEach(x => initGroup(x.id))
 }
 
-export const loadGroupAssets = (groupId: GroupId) => {
+export const prefetchGroupAssets = (groupId: GroupId) => {
   const groupConfig = getGroupConfig(groupId)!
   const { store } = groupConfig
 
   store.requests.get().forEach(request => {
     fetch(request.url)
   })
+}
+
+export const prefetchAssets = () => {
+  groupConfigs.forEach(x => prefetchGroupAssets(x.id))
 }

@@ -5,14 +5,13 @@ import { Group } from './components/Group'
 import { requestStore } from './stores/RequestStore'
 import { useObservable } from 'micro-observables'
 import styled from '@emotion/styled'
-import { groupConfigs } from './groupConfigs'
+import { groupConfigs, prefetchAssets } from './groupConfigs'
 import { Button } from './components/Button'
-import { CACHE_NAME } from './constants'
+import { CACHE_NAME, MessageType } from './constants'
+import { uiStore } from './stores/UIStore'
 
 const App = () => {
-  const progress = useObservable(requestStore.progress)
-
-  const requests = useObservable(requestStore.requests)
+  const isOnline = useObservable(uiStore.online)
   const pendingRequestCount = useObservable(
     requestStore.pendingRequests.transform(x => x.length)
   )
@@ -23,19 +22,18 @@ const App = () => {
     requestStore.cachedRequests.transform(x => x.length)
   )
 
-  const [isOnline, setOnline] = useState(
-    localStorage.getItem('online') === 'true'
-  )
-
   const handleToggleOnline = () => {
     const value = !isOnline
 
     navigator.serviceWorker.controller?.postMessage({
-      command: 'online',
+      type: MessageType.Online,
       value
     })
-    localStorage.setItem('online', JSON.stringify(value))
-    setOnline(value)
+    uiStore.setOnline(value)
+  }
+
+  const handlePrefetch = () => {
+    prefetchAssets()
   }
 
   const handlePurgeCache = async () => {
@@ -76,6 +74,13 @@ const App = () => {
             <OnlineIndicator online={isOnline} />
             <span>{isOnline ? 'Online' : 'Offline'}</span>
           </OnlineButton>
+          <PrefetchButton
+            className={isOnline && pendingRequestCount > 0 ? '' : 'disabled'}
+            onClick={handlePrefetch}
+          >
+            <span>Prefetch</span>
+          </PrefetchButton>
+
           <PurgeButton onClick={handlePurgeCache}>
             <span>Purge</span>
           </PurgeButton>
@@ -102,6 +107,14 @@ const App = () => {
           />
         ))}
       </Pane>
+
+      <What>
+        <WhatHeading>What?</WhatHeading>
+        <WhatDescription>
+          Cacheness is a simple application that tests service worker cache
+          effectiveness.
+        </WhatDescription>
+      </What>
     </div>
   )
 }
@@ -115,12 +128,27 @@ const Heading = styled.h1`
   margin: 0;
   padding: 0;
   margin-bottom: 36px;
+  height: 54px;
 `
 
 const ButtonContainer = styled.div`
   padding: 16px 0;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
+`
+
+const PrefetchButton = styled(Button)`
+  margin-right: 10px;
+
+  &.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  span {
+    margin-top: 2px;
+  }
 `
 
 const PurgeButton = styled(Button)`
@@ -171,6 +199,30 @@ const Stat = styled.div`
   > span {
     color: #ccc;
   }
+`
+
+const What = styled.div`
+  width: 340px;
+  margin: 16px;
+  padding: 16px;
+`
+
+const WhatHeading = styled.h2`
+  text-align: center;
+  color: #eee;
+  font-family: 'Leckerli One', cursive;
+  text-shadow: 0 2px 1px rgba(0, 0, 0, 0.5), 0 0 36px rgba(0, 0, 0, 0.7);
+  font-size: 1.8rem;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 16px;
+  height: 48px;
+`
+
+const WhatDescription = styled.p`
+  color: #888;
+  text-align: center;
+  line-height: 20px;
 `
 
 export default App

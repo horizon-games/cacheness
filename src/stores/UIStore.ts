@@ -2,7 +2,7 @@ import { observable } from 'micro-observables'
 
 class UIStore {
   current = observable<string | undefined>(undefined)
-  online = observable<boolean>(Boolean(localStorage.getItem('online')))
+  online = observable<boolean>(true)
   glTextureFormat = observable<string>('')
 
   play(group: string) {

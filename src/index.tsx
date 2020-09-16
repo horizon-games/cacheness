@@ -4,11 +4,10 @@ import { render } from 'react-dom'
 import * as serviceWorker from './serviceWorker'
 import App from './App'
 
-import { loadGroupAssets, initGroups, initGroup } from './groupConfigs'
+import { initGroups } from './groupConfigs'
 import { RequestItem, requestStore } from './stores/RequestStore'
 import { uiStore } from './stores/UIStore'
-
-render(<App />, document.getElementById('root'))
+import { MessageType } from './constants'
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -18,39 +17,37 @@ serviceWorker.register()
 const serviceWorkerReady = async () => {
   await navigator.serviceWorker.ready
 
-  console.info('Service Worker Ready!')
+  console.info('Service Worker Ready!', navigator.serviceWorker.controller)
 
   navigator.serviceWorker.controller?.postMessage({
-    command: 'online',
-    value: localStorage.getItem('online') === 'true'
+    type: MessageType.Online
   })
 
   // Update global requestStore
   navigator.serviceWorker.addEventListener('message', ev => {
-    const { command } = ev.data
+    const { data } = ev
+    const type: MessageType = data.type
 
-    switch (command) {
-      case 'online': {
+    switch (type) {
+      case MessageType.Online: {
         const { value } = ev.data
-        console.log(value)
+        console.log('online', value)
         uiStore.setOnline(value)
         break
       }
 
-      case 'request': {
-        const { url, status } = ev.data as RequestItem
+      case MessageType.Request: {
+        const { url, status } = data as RequestItem
         requestStore.updateRequest(url, status)
         break
       }
     }
   })
 
-  //initGroup('audio')
   initGroups()
 
-  //loadGroupAssets('audio')
-  //loadGroupAssets('image')
-  //loadGroupAssets('texture')
+  // Render application
+  render(<App />, document.getElementById('root'))
 }
 
 serviceWorkerReady()

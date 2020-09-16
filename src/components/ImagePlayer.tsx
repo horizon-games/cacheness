@@ -3,6 +3,7 @@ import styled from '@emotion/styled'
 import Slider from 'react-slick'
 import { getGroupConfig } from '../groupConfigs'
 import { useObservable } from 'micro-observables'
+import { Button } from './Button'
 
 export const ImagePlayer = () => {
   const groupConfig = getGroupConfig('image')!
@@ -12,7 +13,11 @@ export const ImagePlayer = () => {
 
   return (
     <Container>
-      <Slider lazyLoad="ondemand">
+      <Slider
+        lazyLoad="ondemand"
+        nextArrow={<Button>Next</Button>}
+        prevArrow={<Button>Prev</Button>}
+      >
         {requests.map((request, idx) => (
           <Image key={idx} src={request.url} />
         ))}
@@ -38,32 +43,16 @@ const Container = styled.div`
 
     .slick-arrow {
       position: absolute;
-      z-index: 2;
-      border: none;
-      background-color: black;
-      color: white;
       bottom: 0;
-      padding: 8px 10px;
-      cursor: pointer;
-
-      font-size: 11px;
+      margin: 16px;
+      z-index: 2;
 
       &.slick-prev {
         left: 0;
-        font-size: 0;
-
-        border-top-right-radius: 8px;
-
-        &::after {
-          content: 'Prev';
-          display: block;
-          font-size: 11px;
-        }
       }
 
       &.slick-next {
         right: 0;
-        border-top-left-radius: 8px;
       }
     }
   }

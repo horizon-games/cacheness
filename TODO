@@ -1,0 +1,15 @@
+Features
+
+- [x] Online/offline toggle
+- [x] Purge cache button
+- [ ] Preload button for each group
+- [ ] Better service worker state
+- [ ] Per group loader specification
+- [x] AudioPlayer
+- [x] ImagePlayer
+- [x] GLTexturePlayer
+- [ ] GLTFPlayer
+
+Bugs
+
+- [ ] Safari: Howler.js cannot load audio from service worker cache

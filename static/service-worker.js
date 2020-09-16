@@ -2,16 +2,27 @@ const CACHE_PREFIX = '@skyweaver/game'
 const CACHE_VERSION = 'v1'
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`
 
+const MessageType = {
+  Online: 'Online',
+  Request: 'Request'
+}
+
+const state = {
+  online: true
+}
+
 const staticAssets = []
 
-let online = true
-
 self.addEventListener('install', async event => {
+  self.skipWaiting() // Activate worker immediately
+
   const cache = await caches.open(CACHE_NAME)
   //cache.addAll(staticAssets)
 })
 
 self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim()) // Become available to all pages
+
   // Delete unused caches after updated service worker activates
   // event.waitUntil(
   //   caches.keys().then(cacheNames => {
@@ -29,12 +40,17 @@ self.addEventListener('activate', event => {
 })
 
 self.addEventListener('message', event => {
-  const { command, value } = event.data
+  const { type, value } = event.data
 
-  switch (command) {
-    case 'online':
-      online = value
+  switch (type) {
+    case MessageType.Online: {
+      if (typeof value === 'undefined') {
+        messageClients({ type: MessageType.Online, value: state.online })
+      } else {
+        state.online = value
+      }
       break
+    }
   }
 })
 
@@ -44,13 +60,18 @@ self.addEventListener('fetch', event => {
       return cache.match(event.request).then(response => {
         const { url, destination } = event.request
         if (response) {
-          messageClients({ command: 'request', url, destination, status: 2 })
+          messageClients({
+            type: MessageType.Request,
+            url,
+            destination,
+            status: 2
+          })
           return response
-        } else if (online || !shouldCache(event.request)) {
+        } else if (state.online || !shouldCache(event.request)) {
           return fetch(event.request).then(response => {
             if (shouldCache(event.request)) {
               messageClients({
-                command: 'request',
+                type: MessageType.Request,
                 url,
                 destination,
                 status: 1

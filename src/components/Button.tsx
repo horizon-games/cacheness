@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 import styled from '@emotion/styled'
 
 interface ButtonProps {
-  onClick: () => void
+  onClick?: () => void
   children: ReactNode
   className?: string
 }
@@ -56,8 +56,10 @@ const InnerContainer = styled.a`
   background: linear-gradient(318.62deg, #151618 17.83%, #393c40 86.21%);
   box-shadow: inset 1px 1px 1px rgba(217, 219, 223, 0.05);
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.5);
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
   }
 
   &.primary {
