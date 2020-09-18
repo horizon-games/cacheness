@@ -91,9 +91,11 @@ const App = () => {
             Pending: <span>{pendingRequestCount}</span>
           </Stat>
           <Stat>
+            <NewStatLegend />
             New: <span>{newRequestCount}</span>
           </Stat>
           <Stat>
+            <CachedStatLegend />
             Cached: <span>{cachedRequestCount}</span>
           </Stat>
         </StatContainer>
@@ -195,10 +197,27 @@ const Stat = styled.div`
   color: #888;
   flex: 1;
   font-size: 0.9rem;
+  display: flex;
 
   > span {
+    margin-left: 5px;
     color: #ccc;
   }
+`
+
+const StatLegend = styled.div`
+  width: 13px;
+  height: 13px;
+  border: 2px solid black;
+  margin-right: 3px;
+`
+
+const NewStatLegend = styled(StatLegend)`
+  background: linear-gradient(179deg, #848484 17.83%, #393939 86.21%);
+`
+
+const CachedStatLegend = styled(StatLegend)`
+  background: linear-gradient(179deg, #ec6401 17.83%, #d62903 86.21%);
 `
 
 const What = styled.div`
