@@ -196,20 +196,21 @@ const StatContainer = styled.div`
 const Stat = styled.div`
   color: #888;
   flex: 1;
-  font-size: 0.9rem;
+  font-size: 13px;
   display: flex;
 
   > span {
-    margin-left: 5px;
+    margin-left: 4px;
     color: #ccc;
   }
 `
 
 const StatLegend = styled.div`
-  width: 13px;
-  height: 13px;
-  border: 2px solid black;
-  margin-right: 3px;
+  width: 11px;
+  height: 11px;
+  margin-right: 5px;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 `
 
 const NewStatLegend = styled(StatLegend)`
