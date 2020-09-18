@@ -15,6 +15,7 @@ export const ImagePlayer = () => {
     <Container>
       <Slider
         lazyLoad="ondemand"
+        speed={0}
         nextArrow={<Button>Next</Button>}
         prevArrow={<Button>Prev</Button>}
       >
