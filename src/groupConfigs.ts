@@ -186,6 +186,7 @@ export const getGroupConfig = (groupId: GroupId) =>
 export const groupIds = groupConfigs.map(x => x.id)
 
 export const initGroup = async (groupId: GroupId) => {
+  console.log(`Group:${groupId} added`)
   const groupConfig = getGroupConfig(groupId)!
   const assetPaths = groupConfig.getAssetPaths()
   const { store } = groupConfig
@@ -230,9 +231,8 @@ export const initGroup = async (groupId: GroupId) => {
   }
 }
 
-export const initGroups = () => {
-  groupConfigs.forEach(x => initGroup(x.id))
-}
+export const initGroups = () =>
+  Promise.all(groupConfigs.map(x => initGroup(x.id)))
 
 export const prefetchGroupAssets = (groupId: GroupId) => {
   const groupConfig = getGroupConfig(groupId)!
