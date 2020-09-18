@@ -24,7 +24,8 @@ export const Group = (props: GroupProps) => {
   )
 
   const groupConfig = getGroupConfig(id)!
-  const progress = useObservable(groupConfig.store.progress)
+  const cachedProgress = useObservable(groupConfig.store.cachedProgress)
+  const newProgress = useObservable(groupConfig.store.newProgress)
   const fileCount = useObservable(
     groupConfig.store.requests.transform(x => x.length)
   )
@@ -46,7 +47,10 @@ export const Group = (props: GroupProps) => {
         <Indicator group={id} isPlaying={isPlaying} />
       </Header>
       <ProgressContainer>
-        <ProgressBar value={progress} />
+        <ProgressBar
+          cachedProgress={cachedProgress}
+          newProgress={newProgress}
+        />
       </ProgressContainer>
 
       {isPlaying && getGroupPlayer(id)}

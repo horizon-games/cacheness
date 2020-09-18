@@ -15,15 +15,6 @@ import { MessageType } from './constants'
 serviceWorker.register()
 
 const serviceWorkerReady = async () => {
-  await navigator.serviceWorker.ready
-
-  console.info('Service Worker Ready!', navigator.serviceWorker.controller)
-
-  navigator.serviceWorker.controller?.postMessage({
-    type: MessageType.Online
-  })
-
-  // Update global requestStore
   navigator.serviceWorker.addEventListener('message', ev => {
     const { data } = ev
     const type: MessageType = data.type
@@ -31,17 +22,25 @@ const serviceWorkerReady = async () => {
     switch (type) {
       case MessageType.Online: {
         const { value } = ev.data
-        console.log('online', value)
         uiStore.setOnline(value)
         break
       }
 
       case MessageType.Request: {
         const { url, status } = data as RequestItem
+        console.log('request', url, status)
         requestStore.updateRequest(url, status)
         break
       }
     }
+  })
+
+  await navigator.serviceWorker.ready
+
+  console.info('Service Worker Ready!')
+
+  navigator.serviceWorker.controller?.postMessage({
+    type: MessageType.Online
   })
 
   initGroups()

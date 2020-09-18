@@ -15,7 +15,6 @@ export enum RequestStatus {
 
 export class RequestStore {
   private _requests = observable<readonly RequestItem[]>([])
-  private _groupRequests = observable<Map<GroupId, RequestItem[]>>(new Map())
 
   readonly requests = this._requests.readOnly()
   readonly pendingRequests = this._requests.transform(requests =>
@@ -35,6 +34,16 @@ export class RequestStore {
       requests.filter(x => x.status !== RequestStatus.Pending).length /
         requests.length || 0
   )
+  readonly cachedProgress = this._requests.transform(
+    requests =>
+      requests.filter(x => x.status === RequestStatus.Cached).length /
+        requests.length || 0
+  )
+  readonly newProgress = this._requests.transform(
+    requests =>
+      requests.filter(x => x.status === RequestStatus.New).length /
+        requests.length || 0
+  )
 
   addRequest(url: string, status: RequestStatus = RequestStatus.Pending) {
     this._requests.update(requests => [...requests, { url, status }])
@@ -43,7 +52,9 @@ export class RequestStore {
   updateRequest(url: string, status: RequestStatus) {
     this._requests.update(requests =>
       requests.map(request =>
-        request.url === url ? { ...request, status } : request
+        request.url === url && request.status !== RequestStatus.New
+          ? { ...request, status }
+          : request
       )
     )
   }

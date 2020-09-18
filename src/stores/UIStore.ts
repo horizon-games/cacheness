@@ -1,6 +1,7 @@
 import { observable } from 'micro-observables'
 
 class UIStore {
+  ready = observable<boolean>(false)
   current = observable<string | undefined>(undefined)
   online = observable<boolean>(true)
   glTextureFormat = observable<string>('')
@@ -23,6 +24,10 @@ class UIStore {
 
   setOnline(value: boolean) {
     this.online.set(value)
+
+    if (!this.ready.get()) {
+      this.ready.set(true)
+    }
   }
 
   setGLTextureFormat(value: string) {
