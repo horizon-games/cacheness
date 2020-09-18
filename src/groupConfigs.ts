@@ -7,7 +7,7 @@ import {
   RequestStatus,
   requestStore
 } from './stores/RequestStore'
-import { CACHE_NAME } from './constants'
+import { CACHE_NAME, MessageType } from './constants'
 import { uiStore } from './stores/UIStore'
 
 const manifestData = new AssetHashManifest(
@@ -191,8 +191,8 @@ export const initGroup = async (groupId: GroupId) => {
   const { store } = groupConfig
 
   navigator.serviceWorker.addEventListener('message', ev => {
-    const { command } = ev.data
-    if (command === 'request') {
+    const { type } = ev.data
+    if (type === MessageType.Request) {
       const { url, status } = ev.data as RequestItem
 
       if (assetPaths.includes(url)) {
