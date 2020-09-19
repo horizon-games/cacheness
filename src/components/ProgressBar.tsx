@@ -19,7 +19,7 @@ export const ProgressBar = (props: ProgressBarProps) => {
       : {}
 
   const newProgressStyles =
-    cachedProgress > 0
+    cachedProgress > 0 && newProgress > 0
       ? {
           borderTopLeftRadius: 0,
           borderBottomLeftRadius: 0,

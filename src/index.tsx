@@ -22,6 +22,7 @@ const serviceWorkerReady = async () => {
     switch (type) {
       case MessageType.Online: {
         const { value } = ev.data
+        console.log('online', value)
         uiStore.setOnline(value)
         break
       }

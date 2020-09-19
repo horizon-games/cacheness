@@ -55,43 +55,119 @@ self.addEventListener('message', event => {
 })
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(response => {
-        const { url, destination } = event.request
-        if (response) {
-          messageClients({
-            type: MessageType.Request,
-            url,
-            destination,
-            status: 2
+  const { url, destination } = event.request
+  const range = event.request.headers.get('range')
+
+  if (range) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache
+          .match(event.request, {
+            //ignoreSearch: true,
+            //ignoreMethod: true
+            ignoreVary: true
           })
-          return response
-        } else if (state.online || !shouldCache(event.request)) {
-          return fetch(event.request).then(response => {
-            if (shouldCache(event.request)) {
+          .then(response => {
+            if (response) {
               messageClients({
                 type: MessageType.Request,
                 url,
                 destination,
-                status: 1
+                status: 2
               })
-              cache.put(event.request, response.clone())
+
+              return response.arrayBuffer()
+            } else {
+              return fetch(event.request, {
+                headers: {},
+                mode: 'cors',
+                credentials: 'omit'
+              }).then(response => {
+                if (shouldCache(event.request)) {
+                  messageClients({
+                    type: MessageType.Request,
+                    url,
+                    destination,
+                    status: 1
+                  })
+                  cache.put(event.request, response.clone())
+                }
+
+                return response.arrayBuffer()
+              })
             }
-            return response
           })
-        } else {
-          return new Response(null, { status: 404 })
-        }
+          .then(arrayBuffer => {
+            const bytes = /^bytes\=(\d+)\-(\d+)?$/g.exec(
+              event.request.headers.get('range')
+            )
+
+            if (bytes) {
+              const start = Number(bytes[1])
+              const end = Number(bytes[2]) || arrayBuffer.byteLength - 1
+
+              return new Response(arrayBuffer.slice(start, end + 1), {
+                status: 206,
+                statusText: 'Partial Content',
+                headers: [
+                  [
+                    'Content-Range',
+                    `bytes ${start}-${end}/${arrayBuffer.byteLength}`
+                  ]
+                ]
+              })
+            } else {
+              return new Response(null, {
+                status: 416,
+                statusText: 'Range Not Satisfiable',
+                headers: [['Content-Range', `*/${arrayBuffer.byteLength}`]]
+              })
+            }
+          })
       })
-    })
-  )
+    )
+  } else {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache
+          .match(event.request, {
+            //ignoreSearch: true,
+            //ignoreMethod: true
+            ignoreVary: true
+          })
+          .then(response => {
+            if (response) {
+              messageClients({
+                type: MessageType.Request,
+                url,
+                destination,
+                status: 2
+              })
+              return response
+            } else if (state.online || !shouldCache(event.request)) {
+              return fetch(event.request).then(response => {
+                if (shouldCache(event.request)) {
+                  messageClients({
+                    type: MessageType.Request,
+                    url,
+                    destination,
+                    status: 1
+                  })
+                  cache.put(event.request, response.clone())
+                }
+                return response
+              })
+            } else {
+              return new Response(null, { status: 404 })
+            }
+          })
+      })
+    )
+  }
 })
 
 const shouldCache = request => {
-  //return true
   return request.url.startsWith('https://assets.skyweaver.net/')
-  //|| request.destination === 'image'
 }
 
 const messageClients = data => {
