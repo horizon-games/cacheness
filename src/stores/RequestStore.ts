@@ -1,5 +1,4 @@
-import { request } from 'http'
-import { observable } from 'micro-observables'
+import { makeAutoObservable } from 'mobx'
 import { GroupId } from '../groupConfigs'
 
 export interface RequestItem {
@@ -14,55 +13,61 @@ export enum RequestStatus {
 }
 
 export class RequestStore {
-  private _requests = observable<readonly RequestItem[]>([])
+  requests: RequestItem[] = []
 
-  readonly requests = this._requests.readOnly()
-  readonly pendingRequests = this._requests.transform(requests =>
-    requests.filter(x => x.status === RequestStatus.Pending)
-  )
-  readonly newRequests = this._requests.transform(requests =>
-    requests.filter(x => x.status === RequestStatus.New)
-  )
-  readonly cachedRequests = this._requests.transform(requests =>
-    requests.filter(x => x.status === RequestStatus.Cached)
-  )
-  readonly completedRequests = this._requests.transform(requests =>
-    requests.filter(x => x.status !== RequestStatus.Pending)
-  )
-  readonly progress = this._requests.transform(
-    requests =>
-      requests.filter(x => x.status !== RequestStatus.Pending).length /
-        requests.length || 0
-  )
-  readonly cachedProgress = this._requests.transform(
-    requests =>
-      requests.filter(x => x.status === RequestStatus.Cached).length /
-        requests.length || 0
-  )
-  readonly newProgress = this._requests.transform(
-    requests =>
-      requests.filter(x => x.status === RequestStatus.New).length /
-        requests.length || 0
-  )
+  constructor() {
+    makeAutoObservable(this)
+  }
+
+  get pendingRequests() {
+    return this.requests.filter(x => x.status === RequestStatus.Pending)
+  }
+  get newRequests() {
+    return this.requests.filter(x => x.status === RequestStatus.New)
+  }
+  get cachedRequests() {
+    return this.requests.filter(x => x.status === RequestStatus.Cached)
+  }
+  get completedRequests() {
+    return this.requests.filter(x => x.status !== RequestStatus.Pending)
+  }
+  get progress() {
+    return (
+      this.requests.filter(x => x.status !== RequestStatus.Pending).length /
+        this.requests.length || 0
+    )
+  }
+  get cachedProgress() {
+    return (
+      this.requests.filter(x => x.status === RequestStatus.Cached).length /
+        this.requests.length || 0
+    )
+  }
+  get newProgress() {
+    return (
+      this.requests.filter(x => x.status === RequestStatus.New).length /
+        this.requests.length || 0
+    )
+  }
 
   addRequest(url: string, status: RequestStatus = RequestStatus.Pending) {
-    this._requests.update(requests => [...requests, { url, status }])
+    this.requests.push({ url, status })
   }
 
   updateRequest(url: string, status: RequestStatus) {
-    this._requests.update(requests =>
-      requests.map(request =>
-        request.url === url && request.status !== RequestStatus.New
-          ? { ...request, status }
-          : request
-      )
+    const request = this.requests.find(
+      x => x.url === url && x.status !== RequestStatus.New
     )
+
+    if (request) {
+      request.status = status
+    }
   }
 
   reset() {
-    this._requests.update(requests =>
-      requests.map(request => ({ ...request, status: RequestStatus.Pending }))
-    )
+    this.requests.forEach(request => {
+      request.status = RequestStatus.Pending
+    })
   }
 
   // addGroupRequest(

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import styled from '@emotion/styled'
 import { getGroupConfig } from '../groupConfigs'
-import { useObservable } from 'micro-observables'
 import { Howl } from 'howler'
 import { AudioSeeker } from './AudioSeeker'
+import { observer } from 'mobx-react-lite'
 
-export const AudioPlayer = () => {
+export const AudioPlayer = observer(() => {
   const groupConfig = getGroupConfig('audio')!
   const { store } = groupConfig
-  const requests = useObservable(store.requests)
+  const { requests } = store
   const [trackIndex, setTrackIndex] = useState(0)
   const [howl, setHowl] = useState<Howl | undefined>(undefined)
 
@@ -72,7 +72,7 @@ export const AudioPlayer = () => {
       <AudioSeeker howl={howl} />
     </Container>
   )
-}
+})
 
 const formatTime = (duration: number) => {
   const minutes = Math.floor(duration / 60)

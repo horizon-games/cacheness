@@ -203,6 +203,10 @@ export const initGroup = async (groupId: GroupId) => {
   })
 
   assetPaths.forEach(url => {
+    if (requestStore.requests.some(x => x.url === url)) {
+      return
+    }
+
     groupConfig.store.addRequest(url)
 
     // Global request store
@@ -213,7 +217,7 @@ export const initGroup = async (groupId: GroupId) => {
   if (await caches.has(CACHE_NAME)) {
     const cache = await caches.open(CACHE_NAME)
 
-    store.requests.get().forEach(request => {
+    store.requests.forEach(request => {
       return cache
         .match(request.url, {
           //ignoreSearch: true,
@@ -238,7 +242,7 @@ export const prefetchGroupAssets = (groupId: GroupId) => {
   const groupConfig = getGroupConfig(groupId)!
   const { store } = groupConfig
 
-  store.requests.get().forEach(request => {
+  store.requests.forEach(request => {
     fetch(request.url)
   })
 }

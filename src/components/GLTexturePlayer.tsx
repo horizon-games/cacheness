@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { getGroupConfig } from '../groupConfigs'
-import { useObservable } from 'micro-observables'
 import { uiStore } from '../stores/UIStore'
 import {
   Scene,
@@ -16,6 +15,7 @@ import {
 
 import { KTXLoader } from '../KTXLoader'
 import { Button } from './Button'
+import { observer } from 'mobx-react-lite'
 
 const material = new MeshBasicMaterial()
 const loadingManager = new LoadingManager()
@@ -35,11 +35,11 @@ const loadTexture = (url: string): Promise<CompressedTexture> =>
     )
   })
 
-export const GLTexturePlayer = () => {
+export const GLTexturePlayer = observer(() => {
   const groupConfig = getGroupConfig('texture')!
   const { store } = groupConfig
-  const requests = useObservable(store.requests)
-  const glTextureFormat = useObservable(uiStore.glTextureFormat)
+  const { requests } = store
+  const { glTextureFormat } = uiStore
   const [textureIndex, setTextureIndex] = useState(0)
   const sceneContainerEl = useRef<HTMLDivElement>(null)
 
@@ -100,7 +100,7 @@ export const GLTexturePlayer = () => {
       <NextButton onClick={handleNextTexture}>Next</NextButton>
     </Container>
   )
-}
+})
 
 const Container = styled.div`
   width: 100%;

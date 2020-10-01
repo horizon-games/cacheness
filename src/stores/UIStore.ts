@@ -1,21 +1,25 @@
-import { observable } from 'micro-observables'
+import { makeAutoObservable } from 'mobx'
 
 class UIStore {
-  ready = observable<boolean>(false)
-  current = observable<string | undefined>(undefined)
-  online = observable<boolean>(true)
-  glTextureFormat = observable<string>('')
+  ready: boolean = false
+  current: string | undefined = undefined
+  online: boolean = true
+  glTextureFormat: string = ''
+
+  constructor() {
+    makeAutoObservable(this)
+  }
 
   play(group: string) {
-    this.current.set(group)
+    this.current = group
   }
 
   pause() {
-    this.current.set(undefined)
+    this.current = undefined
   }
 
   toggle(group: string) {
-    if (group !== this.current.get()) {
+    if (group !== this.current) {
       this.play(group)
     } else {
       this.pause()
@@ -23,15 +27,15 @@ class UIStore {
   }
 
   setOnline(value: boolean) {
-    this.online.set(value)
+    this.online = value
 
-    if (!this.ready.get()) {
-      this.ready.set(true)
+    if (!this.ready) {
+      this.ready = true
     }
   }
 
   setGLTextureFormat(value: string) {
-    this.glTextureFormat.set(value)
+    this.glTextureFormat = value
   }
 }
 

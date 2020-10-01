@@ -3,24 +3,16 @@ import { Pane } from './components/Pane'
 import { Global, css } from '@emotion/core'
 import { Group } from './components/Group'
 import { requestStore } from './stores/RequestStore'
-import { useObservable } from 'micro-observables'
 import styled from '@emotion/styled'
 import { groupConfigs, prefetchAssets } from './groupConfigs'
 import { Button } from './components/Button'
 import { CACHE_NAME, MessageType } from './constants'
 import { uiStore } from './stores/UIStore'
+import { observer } from 'mobx-react-lite'
 
-const App = () => {
-  const isOnline = useObservable(uiStore.online)
-  const pendingRequestCount = useObservable(
-    requestStore.pendingRequests.transform(x => x.length)
-  )
-  const newRequestCount = useObservable(
-    requestStore.newRequests.transform(x => x.length)
-  )
-  const cachedRequestCount = useObservable(
-    requestStore.cachedRequests.transform(x => x.length)
-  )
+const App = observer(() => {
+  const isOnline = uiStore.online
+  const { pendingRequests, newRequests, cachedRequests } = requestStore
 
   const handleToggleOnline = () => {
     const value = !isOnline
@@ -75,7 +67,7 @@ const App = () => {
             <span>{isOnline ? 'Online' : 'Offline'}</span>
           </OnlineButton>
           <PrefetchButton
-            className={isOnline && pendingRequestCount > 0 ? '' : 'disabled'}
+            className={isOnline && pendingRequests.length > 0 ? '' : 'disabled'}
             onClick={handlePrefetch}
           >
             <span>Prefetch</span>
@@ -88,15 +80,15 @@ const App = () => {
 
         <StatContainer>
           <Stat>
-            Pending: <span>{pendingRequestCount}</span>
+            Pending: <span>{pendingRequests.length}</span>
           </Stat>
           <Stat>
             <NewStatLegend />
-            New: <span>{newRequestCount}</span>
+            New: <span>{newRequests.length}</span>
           </Stat>
           <Stat>
             <CachedStatLegend />
-            Cached: <span>{cachedRequestCount}</span>
+            Cached: <span>{cachedRequests.length}</span>
           </Stat>
         </StatContainer>
 
@@ -119,7 +111,7 @@ const App = () => {
       </What>
     </div>
   )
-}
+})
 
 const Heading = styled.h1`
   text-align: center;

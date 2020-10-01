@@ -2,14 +2,13 @@ import React from 'react'
 import styled from '@emotion/styled'
 import Slider from 'react-slick'
 import { getGroupConfig } from '../groupConfigs'
-import { useObservable } from 'micro-observables'
 import { Button } from './Button'
+import { observer } from 'mobx-react-lite'
 
-export const ImagePlayer = () => {
+export const ImagePlayer = observer(() => {
   const groupConfig = getGroupConfig('image')!
   const { store } = groupConfig
-
-  const requests = useObservable(store.requests)
+  const { requests } = store
 
   return (
     <Container>
@@ -25,7 +24,7 @@ export const ImagePlayer = () => {
       </Slider>
     </Container>
   )
-}
+})
 
 const Container = styled.div`
   width: 100%;

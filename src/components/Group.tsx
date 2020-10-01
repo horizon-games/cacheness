@@ -2,13 +2,14 @@ import React from 'react'
 import styled from '@emotion/styled'
 import { Indicator } from './Indicator'
 import { uiStore } from '../stores/UIStore'
-import { useObservable } from 'micro-observables'
 import { ProgressBar } from './ProgressBar'
-import { getGroupConfig, GroupId, groupConfigs } from '../groupConfigs'
+import { getGroupConfig, GroupId } from '../groupConfigs'
 
 import { AudioPlayer } from './AudioPlayer'
 import { ImagePlayer } from './ImagePlayer'
 import { GLTexturePlayer } from './GLTexturePlayer'
+import { observer } from 'mobx-react-lite'
+import { reaction } from 'mobx'
 
 interface GroupProps {
   id: GroupId
@@ -16,22 +17,27 @@ interface GroupProps {
   description?: any
 }
 
-export const Group = (props: GroupProps) => {
+console.log('reaction')
+reaction(
+  () => uiStore.current,
+  (a, b) => {
+    console.log('reacted', a, b)
+  }
+)
+
+export const Group = observer((props: GroupProps) => {
   const { id, title, description } = props
 
-  const isPlaying = useObservable(
-    uiStore.current.transform(group => group === id)
-  )
+  console.log('rerender', uiStore.current)
 
+  const isPlaying = uiStore.current === id
   const groupConfig = getGroupConfig(id)!
-  const cachedProgress = useObservable(groupConfig.store.cachedProgress)
-  const newProgress = useObservable(groupConfig.store.newProgress)
-  const fileCount = useObservable(
-    groupConfig.store.requests.transform(x => x.length)
-  )
-  const completedFileCount = useObservable(
-    groupConfig.store.completedRequests.transform(x => x.length)
-  )
+  const {
+    requests,
+    completedRequests,
+    cachedProgress,
+    newProgress
+  } = groupConfig.store
 
   return (
     <Container isPlaying={isPlaying}>
@@ -39,8 +45,10 @@ export const Group = (props: GroupProps) => {
         <Title>
           {title}{' '}
           <FileCount>
-            <span>{completedFileCount}</span>
-            {completedFileCount !== fileCount && <>/{fileCount}</>}
+            <span>{completedRequests.length}</span>
+            {completedRequests.length !== requests.length && (
+              <>/{requests.length}</>
+            )}
           </FileCount>
         </Title>
         <Description>{description}</Description>
@@ -56,7 +64,7 @@ export const Group = (props: GroupProps) => {
       {isPlaying && getGroupPlayer(id)}
     </Container>
   )
-}
+})
 
 const getGroupPlayer = (groupId: GroupId) => {
   const component = (() => {
