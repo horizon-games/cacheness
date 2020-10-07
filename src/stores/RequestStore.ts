@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx'
-import { GroupId } from '../groupConfigs'
+import { GroupType } from '../constants'
 
 export interface RequestItem {
+  group: GroupType
   url: string
   status: RequestStatus
 }
@@ -50,8 +51,12 @@ export class RequestStore {
     )
   }
 
-  addRequest(url: string, status: RequestStatus = RequestStatus.Pending) {
-    this.requests.push({ url, status })
+  addRequest(
+    group: GroupType,
+    url: string,
+    status: RequestStatus = RequestStatus.Pending
+  ) {
+    this.requests.push({ url, status, group })
   }
 
   updateRequest(url: string, status: RequestStatus) {
@@ -70,23 +75,11 @@ export class RequestStore {
     })
   }
 
-  // addGroupRequest(
-  //   groupId: GroupId,
-  //   url: string,
-  //   status: RequestStatus = RequestStatus.Pending
-  // ) {
-  //   this.addRequest(url, status)
-  //   this._groupRequests.update(groupRequests => {
-  //     if (!groupRequests.has(groupId)) {
-  //       groupRequests.set(groupId, [])
-  //     }
-
-  //     const requests = groupRequests.get(groupId)!
-  //     groupRequests.set(groupId, [...requests, { url, status }])
-
-  //     return groupRequests
-  //   })
-  // }
+  async prefetch() {
+    this.requests.forEach(request => {
+      if (request.status === RequestStatus.Pending) {
+        fetch(request.url)
+      }
+    })
+  }
 }
-
-export const requestStore = new RequestStore()

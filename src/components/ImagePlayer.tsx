@@ -1,15 +1,15 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import Slider from 'react-slick'
-import { getGroupConfig } from '../groupConfigs'
 import { Button } from './Button'
 import { observer } from 'mobx-react-lite'
+import { RequestItem } from '../stores/RequestStore'
 
-export const ImagePlayer = observer(() => {
-  const groupConfig = getGroupConfig('image')!
-  const { store } = groupConfig
-  const { requests } = store
+interface ImagePlayerProps {
+  requests: RequestItem[]
+}
 
+export const ImagePlayer = observer(({ requests }: ImagePlayerProps) => {
   return (
     <Container>
       <Slider

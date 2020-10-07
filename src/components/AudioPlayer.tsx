@@ -1,14 +1,50 @@
 import React, { useState, useEffect } from 'react'
 import styled from '@emotion/styled'
-import { getGroupConfig } from '../groupConfigs'
 import { Howl } from 'howler'
 import { AudioSeeker } from './AudioSeeker'
 import { observer } from 'mobx-react-lite'
+import { useStore } from '../stores'
+import { RequestItem } from '../stores/RequestStore'
 
-export const AudioPlayer = observer(() => {
-  const groupConfig = getGroupConfig('audio')!
-  const { store } = groupConfig
-  const { requests } = store
+const trackMetadata = [
+  {
+    url: `SkyWeaverTheme.mp3`,
+    title: 'SkyWeaver Theme',
+    by: 'Russel Shaw'
+  },
+  {
+    url: `SkyWeaverBattle1.mp3`,
+    title: 'Ready',
+    by: 'Winifred Phillips'
+  },
+  {
+    url: `SkyWeaverBattle2.mp3`,
+    title: 'Momentum',
+    by: 'Starchild'
+  },
+  {
+    url: `SkyWeaverBattle3.mp3`,
+    title: 'Sky Control',
+    by: 'Erik Hughes'
+  },
+  {
+    url: `SkyWeaverBattle4.mp3`,
+    title: 'Feel',
+    by: 'Starchild'
+  },
+  {
+    url: `SkyWeaverBattle5.mp3`,
+    title: 'Energy',
+    by: 'Alberto Jossue'
+  }
+]
+
+interface AudioPlayerProps {
+  requests: RequestItem[]
+}
+
+export const AudioPlayer = observer(({ requests }: AudioPlayerProps) => {
+  const { audioStore } = useStore()
   const [trackIndex, setTrackIndex] = useState(0)
   const [howl, setHowl] = useState<Howl | undefined>(undefined)
 
@@ -52,16 +88,15 @@ export const AudioPlayer = observer(() => {
     }
   }
 
-  const trackMeta = groupConfig.getMetadata!(requests[trackIndex].url) as {
-    title: string
-    by: string
-  }
+  const { title, by } = trackMetadata.find(x =>
+    requests[trackIndex].url.includes(x.url)
+  )!
 
   return (
     <Container>
       <Track>
-        <Title>{trackMeta.title}</Title>
-        <By>{trackMeta.by}</By>
+        <Title>{title}</Title>
+        <By>{by}</By>
       </Track>
       <PrevButton onClick={handlePrevTrack}>
         <PrevIcon />

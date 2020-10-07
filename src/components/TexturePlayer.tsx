@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
-import { getGroupConfig } from '../groupConfigs'
-import { uiStore } from '../stores/UIStore'
 import {
   Scene,
   PerspectiveCamera,
@@ -16,6 +14,8 @@ import {
 import { KTXLoader } from '../KTXLoader'
 import { Button } from './Button'
 import { observer } from 'mobx-react-lite'
+import { useStore } from '../stores'
+import { RequestItem } from '../stores/RequestStore'
 
 const material = new MeshBasicMaterial()
 const loadingManager = new LoadingManager()
@@ -35,16 +35,17 @@ const loadTexture = (url: string): Promise<CompressedTexture> =>
     )
   })
 
-export const GLTexturePlayer = observer(() => {
-  const groupConfig = getGroupConfig('texture')!
-  const { store } = groupConfig
-  const { requests } = store
-  const { glTextureFormat } = uiStore
+interface TexturePlayerProps {
+  requests: RequestItem[]
+}
+
+export const TexturePlayer = observer(({ requests }: TexturePlayerProps) => {
+  const { textureStore } = useStore()
+  const { format } = textureStore
   const [textureIndex, setTextureIndex] = useState(0)
   const sceneContainerEl = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // === THREE.JS CODE START ===
     const scene = new Scene()
     const camera = new PerspectiveCamera(75, 1, 0.1, 1000)
     const renderer = new WebGLRenderer()
@@ -92,7 +93,7 @@ export const GLTexturePlayer = observer(() => {
   return (
     <Container>
       <Format>
-        Format: <span>{glTextureFormat}</span>
+        Format: <span>{format}</span>
       </Format>
 
       <SceneContainer ref={sceneContainerEl}></SceneContainer>

@@ -1,17 +1,38 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Pane } from './components/Pane'
 import { Global, css } from '@emotion/core'
 import { Group } from './components/Group'
-import { requestStore } from './stores/RequestStore'
 import styled from '@emotion/styled'
-import { groupConfigs, prefetchAssets } from './groupConfigs'
 import { Button } from './components/Button'
-import { CACHE_NAME, MessageType } from './constants'
-import { uiStore } from './stores/UIStore'
+import { CACHE_NAME, GroupType, MessageType } from './constants'
 import { observer } from 'mobx-react-lite'
+import { useStore } from './stores'
+
+const groups: Array<{
+  group: GroupType
+  title: string
+  description: string
+}> = [
+  {
+    group: 'audio',
+    title: 'Audio',
+    description: 'Music, speech and soundFX'
+  },
+  {
+    group: 'image',
+    title: 'Images',
+    description: 'Standard web images'
+  },
+  {
+    group: 'texture',
+    title: 'Textures',
+    description: 'Compressed GL textures'
+  }
+]
 
 const App = observer(() => {
-  const isOnline = uiStore.online
+  const { requestStore, serviceWorkerStore } = useStore()
+  const { isOnline } = serviceWorkerStore
   const { pendingRequests, newRequests, cachedRequests } = requestStore
 
   const handleToggleOnline = () => {
@@ -21,11 +42,11 @@ const App = observer(() => {
       type: MessageType.Online,
       value
     })
-    uiStore.setOnline(value)
+    serviceWorkerStore.toggleOnline(value)
   }
 
   const handlePrefetch = () => {
-    prefetchAssets()
+    requestStore.prefetch()
   }
 
   const handlePurgeCache = async () => {
@@ -33,7 +54,6 @@ const App = observer(() => {
       await caches.delete(CACHE_NAME)
 
       requestStore.reset()
-      groupConfigs.forEach(groupConfig => groupConfig.store.reset())
     }
   }
 
@@ -92,10 +112,10 @@ const App = observer(() => {
           </Stat>
         </StatContainer>
 
-        {groupConfigs.map(group => (
+        {groups.map(group => (
           <Group
-            key={group.id}
-            id={group.id}
+            key={group.group}
+            group={group.group}
             title={group.title}
             description={group.description}
           />

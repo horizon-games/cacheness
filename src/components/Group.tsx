@@ -1,43 +1,63 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import { Indicator } from './Indicator'
-import { uiStore } from '../stores/UIStore'
 import { ProgressBar } from './ProgressBar'
-import { getGroupConfig, GroupId } from '../groupConfigs'
-
 import { AudioPlayer } from './AudioPlayer'
 import { ImagePlayer } from './ImagePlayer'
-import { GLTexturePlayer } from './GLTexturePlayer'
-import { observer } from 'mobx-react-lite'
-import { reaction } from 'mobx'
+import { TexturePlayer } from './TexturePlayer'
+import { observer, useLocalObservable } from 'mobx-react-lite'
+import { useStore } from '../stores'
+import { GroupType } from '../constants'
+import {
+  RequestItem,
+  RequestStatus,
+  RequestStore
+} from '../stores/RequestStore'
 
 interface GroupProps {
-  id: GroupId
+  group: GroupType
   title: string
   description?: any
 }
 
-console.log('reaction')
-reaction(
-  () => uiStore.current,
-  (a, b) => {
-    console.log('reacted', a, b)
-  }
-)
+export const Group = observer(({ group, title, description }: GroupProps) => {
+  const { groupStore, requestStore } = useStore()
+  const isPlaying = groupStore.current === group
 
-export const Group = observer((props: GroupProps) => {
-  const { id, title, description } = props
+  const filteredRequestStore = useLocalObservable(() => ({
+    get requests() {
+      return requestStore.requests.filter(x => x.group === group)
+    },
 
-  console.log('rerender', uiStore.current)
+    get pendingRequests() {
+      return requestStore.pendingRequests.filter(x => x.group === group)
+    },
 
-  const isPlaying = uiStore.current === id
-  const groupConfig = getGroupConfig(id)!
+    get completedRequests() {
+      return requestStore.completedRequests.filter(x => x.group === group)
+    },
+
+    get cachedProgress() {
+      return (
+        this.requests.filter(x => x.status === RequestStatus.Cached).length /
+          this.requests.length || 0
+      )
+    },
+
+    get newProgress() {
+      return (
+        this.requests.filter(x => x.status === RequestStatus.New).length /
+          this.requests.length || 0
+      )
+    }
+  }))
+
   const {
     requests,
     completedRequests,
-    cachedProgress,
-    newProgress
-  } = groupConfig.store
+    newProgress,
+    cachedProgress
+  } = filteredRequestStore
 
   return (
     <Container isPlaying={isPlaying}>
@@ -52,7 +72,7 @@ export const Group = observer((props: GroupProps) => {
           </FileCount>
         </Title>
         <Description>{description}</Description>
-        <Indicator group={id} isPlaying={isPlaying} />
+        <Indicator group={group} isPlaying={isPlaying} />
       </Header>
       <ProgressContainer>
         <ProgressBar
@@ -61,22 +81,22 @@ export const Group = observer((props: GroupProps) => {
         />
       </ProgressContainer>
 
-      {isPlaying && getGroupPlayer(id)}
+      {isPlaying && getGroupPlayer(group, requests)}
     </Container>
   )
 })
 
-const getGroupPlayer = (groupId: GroupId) => {
+const getGroupPlayer = (group: GroupType, requests: RequestItem[]) => {
   const component = (() => {
-    switch (groupId) {
+    switch (group) {
       case 'audio':
-        return <AudioPlayer />
+        return <AudioPlayer requests={requests} />
 
       case 'image':
-        return <ImagePlayer />
+        return <ImagePlayer requests={requests} />
 
       case 'texture':
-        return <GLTexturePlayer />
+        return <TexturePlayer requests={requests} />
 
       default:
         return null

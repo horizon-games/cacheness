@@ -1,26 +1,26 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import { uiStore } from '../stores/UIStore'
-import { observer } from 'mobx-react-lite'
+import { useStore } from '../stores'
+import { GroupType } from '../constants'
 
 interface IndicatorProps {
-  group: string
+  group: GroupType
   isPlaying: boolean
   onPlay?: () => void
 }
 
-export const Indicator = observer((props: IndicatorProps) => {
+export const Indicator = (props: IndicatorProps) => {
   const { isPlaying, group, onPlay } = props
+  const { groupStore } = useStore()
 
   return (
     <OuterContainer isPlaying={isPlaying}>
       <InnerContainer
         isPlaying={isPlaying}
         onClick={() => {
-          uiStore.toggle(group)
-          console.log('HEY', group)
+          groupStore.toggle(group)
 
-          if (uiStore.current === group) {
+          if (groupStore.current === group) {
             if (onPlay) {
               onPlay()
             }
@@ -31,7 +31,7 @@ export const Indicator = observer((props: IndicatorProps) => {
       </InnerContainer>
     </OuterContainer>
   )
-})
+}
 
 const OuterContainer = styled.div<{ isPlaying: boolean }>`
   position: absolute;
